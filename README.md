@@ -1,67 +1,98 @@
 # Transversal-Stutter-Mitigation-Hypothesis
 A hypothesis proposing the mitigation of residual gaming microstutters through configurable presentation buffering inspired by network jitter buffers.
-Transversal Stutter Mitigation Hypothesis
-Author: Rodrigo Lagos
-Initial Publication: 2026-10-16
+# Transversal Stutter Mitigation Hypothesis
 
-Abstract
-Modern games continue to exhibit residual microstutters despite advances in shader precompilation, PSO caching, frame pacing optimization, low-latency rendering, and modern GPU scheduling.
+**Author:** Rodrigo Lagos  
+**Initial Publication:** 2026-10-16  
+**Status:** Technical Hypothesis / Open Discussion
+
+---
+
+# Abstract
+
+Despite significant advances in shader precompilation, PSO caching, frame pacing, low-latency rendering, and technologies such as NVIDIA Reflex, modern games still exhibit residual microstutters that are perceptible even on high-end systems.
 
 This document proposes a conceptual hypothesis inspired by network jitter buffers.
 
-Instead of attempting to eliminate every source of microstutter, a small configurable presentation buffer may absorb residual frame-time variance before it becomes visible to the user.
+Instead of eliminating every source of microstutter, it may be possible to absorb a portion of residual frame-time variance through a configurable presentation buffer operating at the display output stage.
 
-The objective is not reducing latency.
+The primary objective is not reducing latency.
 
-The objective is reducing visible frame-time irregularity.
+The primary objective is reducing visible frame-time irregularity.
 
-The Core Idea
-Current approaches generally focus on:
+---
 
-Prevent the stutter.
-This hypothesis proposes exploring:
+# Background
 
-Absorb the stutter.
+Current approaches focus on preventing stutters by addressing their root cause:
+
+- Shader precompilation
+- PSO generation and caching
+- Asset preloading
+- Improved scheduling
+- Frame pacing optimization
+- Low latency render queues
+
+These approaches are effective, especially against large stutters caused by first-time shader compilation.
+
+However, residual microstutters often remain even after these systems are implemented.
+
+Examples include:
+
+- CPU scheduling variance
+- GPU scheduling variance
+- Driver overhead
+- Frame delivery irregularities
+- Synchronization issues
+- Presentation timing anomalies
+
+---
+
+# Core Idea
+
+The hypothesis is simple:
+
+Instead of trying to eliminate every microstutter, hide small frame-time disturbances from the final presentation stage through a small configurable temporal buffer.
+
 The inspiration comes from telecommunications.
 
-In VoIP systems:
+In VoIP systems, packet arrival jitter is not eliminated.
 
-Irregular packet arrival
+Instead:
+
+```text
+Packets arrive irregularly
         ↓
-     Jitter Buffer
+Jitter Buffer
         ↓
-Regular output stream
-The user receives a smoother experience at the cost of a small amount of latency.
+Regularized playback
+```
 
-This document explores whether a similar principle could be applied to frame presentation.
+The user perceives a smoother output at the cost of a small amount of latency.
 
-Problem Statement
-Current solutions are effective against major stutters:
+This document explores whether a similar concept could be applied to game rendering.
 
-Shader compilation
-PSO generation
-Asset streaming stalls
-However, residual microstutters often remain:
+---
 
-CPU scheduling variance
-GPU scheduling variance
-Driver overhead
-Presentation irregularities
-Minor synchronization issues
-Residual frame pacing anomalies
-These events frequently fall within:
+# Conceptual Model
 
-2 ms
-5 ms
-10 ms
-15 ms
-and may still be visible to the user on high-refresh displays.
+Current Pipeline
 
-Proposed Solution
-Introduce a small configurable presentation buffer operating immediately before display output.
+```text
+Input
+ ↓
+CPU
+ ↓
+GPU
+ ↓
+Presentation
+ ↓
+Display
+```
 
-Conceptually:
+Proposed Pipeline
 
+```text
 Input
  ↓
 CPU
@@ -73,145 +104,249 @@ Presentation
 Micro Buffer
  ↓
 Display
-The micro buffer introduces a controlled temporal cushion.
+```
 
-Proposed User Profiles
-Competitive
+The micro buffer introduces a controlled delay before presentation.
+
+---
+
+# Proposed User Modes
+
+## Competitive Mode
+
+```text
 5 ms Buffer
-Lowest latency impact.
+```
 
-Balanced
+Minimal latency impact.
+
+Designed for competitive environments.
+
+---
+
+## Balanced Mode
+
+```text
 10 ms Buffer
-Compromise between responsiveness and smoothness.
+```
 
-Smooth
+Balanced compromise between responsiveness and smoothness.
+
+---
+
+## Smooth Mode
+
+```text
 15 ms Buffer
+```
+
 Maximum microstutter absorption.
 
-Example
-Without Buffer:
+Designed for cinematic and single-player experiences.
+
+---
+
+# Example
+
+Without Presentation Buffer
+
+```text
+Frame Times:
 
 5 ms
 5 ms
 12 ms
 5 ms
 5 ms
+```
+
 Result:
 
-Visible microstutter
-With 15 ms Buffer:
+```text
+Visible Microstutter
+```
+
+---
+
+With 15 ms Presentation Buffer
+
+```text
+Frame Times:
 
 5 ms
 5 ms
 12 ms
 5 ms
 5 ms
+```
+
 Result:
 
+```text
 Microstutter absorbed within the temporal cushion.
-The variance still exists internally.
+```
+
+The internal variance still exists.
 
 The user simply does not perceive most of it.
 
-Important Distinction
-This hypothesis is not intended to solve:
+---
 
-100 ms shader compilation stalls
-200 ms asset streaming stalls
-major engine freezes
-Those should continue to be addressed through traditional methods.
+# Scope
 
-Instead, this proposal specifically targets:
+This hypothesis is NOT designed to solve:
 
-Residual microstutters
+```text
+100 ms Shader Compilation Events
+200 ms Asset Streaming Events
+Major Engine Stalls
+```
+
+These issues should continue to be addressed through traditional methods.
+
+Instead, this proposal targets:
+
+```text
+Residual 2-15 ms Microstutters
+```
+
 that remain after conventional optimizations.
 
-Why This Idea May Be More Relevant Today
-Historically, overall latency budgets were much larger.
+---
 
-Adding extra delay could have been difficult to justify.
+# Why This May Be More Relevant Today
 
-Modern systems now operate with:
+Historically, latency budgets were much larger.
 
-High-refresh displays
-Extremely low system latency
-Technologies such as NVIDIA Reflex
-Powerful CPUs and GPUs
-As a result, sacrificing:
+Adding several milliseconds of additional delay could have been difficult to justify.
 
+Today, modern gaming systems often operate with extremely low total latency.
+
+Examples include:
+
+- NVIDIA Reflex
+- High refresh displays
+- Ultra-low latency peripherals
+- Modern rendering pipelines
+
+Therefore, sacrificing:
+
+```text
 5 ms
 10 ms
 15 ms
-may be a reasonable trade-off if it significantly improves frame-time consistency.
+```
 
-Central Question
-Would users prefer:
+for improved frame-time consistency may represent a more attractive tradeoff than in previous decades.
 
-Scenario A
+---
+
+# Key Observation
+
+Human perception may be more sensitive to latency variance than to a small amount of constant latency.
+
+Example A
+
+```text
 25 ms
 25 ms
 25 ms
 40 ms
 25 ms
 25 ms
-or:
+```
 
-Scenario B
+Example B
+
+```text
 35 ms
 35 ms
 35 ms
 35 ms
 35 ms
 35 ms
-Scenario B introduces more latency but significantly less variance.
+```
 
-This hypothesis suggests that many users may perceive Scenario B as smoother and more pleasant.
+The second scenario introduces more latency but significantly less variability.
 
-Relationship With Existing Solutions
-This proposal is not intended to replace:
+This document hypothesizes that many users may prefer the second experience.
 
-Shader precompilation
-PSO caching
-Asset preloading
-Frame pacing optimization
-NVIDIA Reflex
-Engine-level improvements
-Instead, it may complement them.
+---
 
-Ideal workflow:
+# Relationship With Existing Solutions
 
-Large stutters
+This proposal is intended to complement, not replace:
+
+- Shader precompilation
+- PSO caching
+- Asset preloading
+- NVIDIA Reflex
+- Engine-level optimizations
+
+The ideal workflow would likely be:
+
+```text
+Large Stutters
 ↓
 Prevent
 
-Residual microstutters
+Residual Stutters
 ↓
 Absorb
-Open Questions
-Has this concept already been implemented in commercial engines?
+```
 
-Has any GPU vendor explored similar approaches?
+---
 
-What would be the true latency versus smoothness trade-off?
+# Open Questions
 
-Could adaptive buffering outperform fixed-size buffering?
+1. Has this concept already been explored in commercial engines?
 
-Could this coexist with technologies such as NVIDIA Reflex?
+2. Has any GPU vendor implemented a similar presentation-level buffer?
 
-What percentage of residual microstutters could realistically be hidden?
+3. What is the measurable tradeoff between latency and smoothness?
 
-Current Status
-Conceptual hypothesis.
+4. Could this coexist with technologies such as NVIDIA Reflex?
 
-No implementation currently exists.
+5. What percentage of residual microstutters could realistically be hidden?
 
-Experimental validation is required.
+6. Could adaptive buffers outperform fixed-size buffers?
 
-Community feedback and technical discussion are encouraged.
+---
 
-Attribution
+# Limitations
+
+This document is currently a conceptual hypothesis.
+
+No implementation exists at the time of publication.
+
+No claims of effectiveness are made.
+
+Experimental validation would be required.
+
+---
+
+# Discussion Invitation
+
+This repository exists to encourage discussion among:
+
+- Graphics programmers
+- Engine developers
+- Driver developers
+- Frame pacing researchers
+- Latency optimization specialists
+
+Constructive criticism and technical feedback are welcome.
+
+---
+
+# Attribution
+
 Original hypothesis proposed by:
 
-Rodrigo Lagos
+**Rodrigo Lagos**
 
-This repository serves as the first public publication of this conceptual model.
+Publication date:
+
+**2026-10-16**
+
+This repository serves as the public timestamped publication of the concept.
